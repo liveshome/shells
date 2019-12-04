@@ -1,0 +1,38 @@
+#!/bin/bash
+
+eno1=$1               #运行脚本时候需要在脚本名称后输入网卡名称
+
+while true                                    
+do
+ RX_pre=$(cat /proc/net/dev | grep $eno1 | sed 's/:/ /g' | awk '{print $2}')       #查看下行包数
+ TX_pre=$(cat /proc/net/dev | grep $eno1 | sed 's/:/ /g' | awk '{print $10}')      #查看上行包数
+ sleep 1                                                                           #等待1秒
+ RX_next=$(cat /proc/net/dev | grep $eno1 | sed 's/:/ /g' | awk '{print $2}')      
+ TX_next=$(cat /proc/net/dev | grep $eno1 | sed 's/:/ /g' | awk '{print $10}')
+
+ clear                    #清屏
+ echo -e "\t RX --`date +%k:%M:%S`-- TX"                  
+
+ RX=$((${RX_next}-${RX_pre}))                #1秒后减去1秒前的包数
+ TX=$((${TX_next}-${TX_pre}))                #1秒后减去1秒前的包数
+
+if [ $RX -lt 1024 ];then                    #如果下行包小于1024个
+ RX="${RX}B/s"                               #单位就为B
+elif [ $RX -gt 1048576 ];then                  #如果包数大于1048576个
+ RX=$(echo $RX | awk '{print $1/1048576 "MB/s"}')       # 单位就为MB
+else
+ RX=$(echo $RX | awk '{print $1/1024 "KB/s"}')      #否则就为KB
+ fi
+
+if [ $TX -lt 1024 ];then
+ RX=$(echo $RX | awk '{print $1/1024 "KB/s"}')
+ TX="${TX}B/s"
+ elif [ $TX -gt 1048576 ];then
+ TX=$(echo $TX | awk '{print $1/1048576 "MB/s"}')
+ else
+ TX=$(echo $TX | awk '{print $1/1024 "KB/s"}')
+ fi
+
+ echo -e " $eno1 \t $RX -- $TX "             #打印出下行和上行数据           
+
+done
