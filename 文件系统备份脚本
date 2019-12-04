@@ -1,0 +1,69 @@
+#!/bin/bash
+
+
+#  每小时存档-每小时创建一个存档
+
+CONFIG_FILE=/archive/hourly/Files_To_Backup
+
+# 设置基本存档目标位置
+
+BASEDEST=/archive/hourly
+
+# 收集当前日期、月份和时间
+
+DAY=$(date +%d)
+MONTH=$(date +%m)
+TIME=$(date +%k%M)
+
+# 创建存档目标目录
+
+mkdir -p $BASEDEST/$MONTH/$DAY
+
+# 生成存档目标文件名
+
+DESTINATION=$BASEDEST/$MONTH/$DAY/archive$TIME.tar.gz
+
+##########主脚本####################
+
+if [ -f $CONFIG_FILE ]
+then
+      echo
+else
+      echo
+      echo "$CONFIG_FILE does not exist."
+      echo "Backup not completed due to missing Configuration File"
+      echo
+      exit
+fi
+
+FILE_NO=1                        #从配置文件的第一行开始
+exec < $CONFIG_FILE               #读取配置文件内容
+
+read FILE_NAME                   #读取配置文件的第一条记录
+
+while [ $? -eq 0 ]                  #判断上面命令是否正确
+do
+    if [ -f $FILE_NAME -o -d $FILE_NAME ]    #判断配置文件是文件还是目录，其中一个正确都可以>执行
+then
+     FILE_LIST="$FILE_LIST $FILE_NAME"       #如果文件存在，将其名称添加到列表中
+else
+     echo
+     echo "FILE_NAME,does not exist."
+     echo "Obviously, Iwill not include it in this archive."
+     echo "It is listed on line $FILE_NO of the config file."
+     echo "Continuing to build archive list........"
+     echo
+fi
+    FILE_NO=$[$FILE_NO + 1]       #将行号/文件号增加1
+    read FILE_NAME                #读取下一个记录
+done
+
+# 备份文件并压缩存档
+
+echo "Starting archive..."
+echo
+tar -czf $DESTINATION $FILE_LIST 2> /dev/null  #  如果错误会输出到/dev/null
+echo "Archive completed"
+echo "Resulting archive file is: $DESTINATION"
+echo
+exit
