@@ -1,0 +1,9 @@
+#!/bin/bash
+
+home=`df -h |sed -n '10p'  |  awk '{print $5}' | cut -f 1 -d '%'`     #查看home目录下剩余空间
+
+if ((home>96));then                      #如果home目录占用空间大于96%就执行
+
+wall</home/liweijie/shell/message.txt        #把需要警告的内容通过wall命令发送给用户
+
+fi
