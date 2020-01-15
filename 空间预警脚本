@@ -1,9 +1,16 @@
 #!/bin/bash
 
-home=`df -h |sed -n '10p'  |  awk '{print $5}' | cut -f 1 -d '%'`     #查看home目录下剩余空间
+home=$(df -h |  sed -n "10p" | gawk  '{print $5}' | cut -f 1 -d '%')
+user=$(du -sk /home/* |  sort -rn | sed -n '2,11p' | gawk '{print $2}' |  sed  's/\/home\///g')
 
-if ((home>96));then                      #如果home目录占用空间大于96%就执行
+if [ $home -gt 96 ];then
+    echo "home 大于 96%"
+    echo "$user"
+for messages in $user
+do
+   write $messages</home/liweijie/shell/message.txt
+done
 
-wall</home/liweijie/shell/message.txt        #把需要警告的内容通过wall命令发送给用户
-
+else
+     echo "home  小于 96%"
 fi
